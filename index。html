@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>咋俩天下第一最最好 💑</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'PingFang SC','Microsoft YaHei',sans-serif}
+body{background:#fdf6f8;padding:20px;max-width:600px;margin:0 auto;padding-bottom:80px;background-image:url('https://p.qqan.com/up/2026-2/17401719918712682.jpg');background-size:cover;background-position:center;background-attachment:fixed}
+.lock-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
+.lock-screen input{width:80%;max-width:300px;margin-bottom:20px;text-align:center;letter-spacing:4px;font-size:20px}
+.lock-screen button{width:80%;max-width:300px}
+.header{text-align:center;padding:20px 0;color:#ff5e8f;background:rgba(255,255,255,0.85);border-radius:16px;margin-bottom:20px}
+.header h1{font-size:24px;margin-bottom:5px}
+.header p{font-size:14px;color:#999}
+.countdown{font-size:13px;color:#ff5e8f;margin-top:8px}
+.card{background:rgba(255,255,255,0.9);border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 4px 12px rgba(0,0,0,0.05)}
+.card h3{color:#ff5e8f;margin-bottom:15px;font-size:16px}
+input,textarea,select{width:100%;padding:12px;border:1px solid #eee;border-radius:10px;margin-bottom:12px;font-size:15px;outline:none;background:rgba(255,255,255,0.8)}
+input:focus,textarea:focus,select:focus{border-color:#ff5e8f}
+button{width:100%;background:#ff5e8f;color:white;border:none;padding:14px;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}
+button:active{opacity:.9}
+.item{background:rgba(255,255,255,0.9);border-radius:14px;padding:16px;margin-bottom:12px;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.item .tag{display:inline-block;background:#ffe6ef;color:#ff5e8f;font-size:12px;padding:3px 8px;border-radius:6px;margin-bottom:6px}
+.item .date{font-size:12px;color:#999;margin-bottom:8px}
+.item .content{font-size:15px;line-height:1.5;color:#333;margin-bottom:6px}
+.item .remark{font-size:13px;color:#888;margin-top:4px}
+.item .photo{max-width:100%;border-radius:8px;margin-top:8px}
+.item .del{position:absolute;right:14px;top:14px;color:#ff5555;font-size:12px;background:#ffeaea;padding:3px 8px;border-radius:6px;cursor:pointer}
+.empty{text-align:center;color:#aaa;padding:40px 0;font-size:14px;background:rgba(255,255,255,0.8);border-radius:16px}
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lockScreen">
+  <h2 style="color:#ff5e8f;margin-bottom:20px">💖 咋俩天下第一最最好</h2>
+  <input type="password" id="lockPwd" placeholder="输入密码解锁" maxlength="4">
+  <button onclick="unlock()">那当然</button>
+</div>
+
+<div id="app" style="display:none">
+  <div class="header">
+    <h1>💖 咋俩天下第一最最好</h1>
+    <p>记录和宝贝的每一个甜蜜瞬间</p>
+    <div class="countdown" id="countdownText"></div>
+  </div>
+
+  <div class="card">
+    <h3>✍️ 新增甜蜜记录（对方同步看）</h3>
+    <select id="type">
+      <option>约会</option>
+      <option>暖心小事</option>
+      <option>纪念日</option>
+      <option>礼物</option>
+      <option>想你</option>
+      <option>吵架和好</option>
+      <option>其他</option>
+    </select>
+    <input type="date" id="date">
+    <textarea id="content" placeholder="写下今天发生的事..."></textarea>
+    <input id="remark" placeholder="备注（可选）">
+    <input type="file" id="photo" accept="image/*">
+    <button onclick="add()">💘 保存并同步给对方</button>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<script>
+const startDate = new Date('2026-01-11');
+const lockPassword = '2026';
+const API = 'https://love-sync.deno.dev';
+const ROOM = 'love2026';
+
+async function unlock(){
+  let p = lockPwd.value;
+  if(p==lockPassword){
+    lockScreen.style.display='none';
+    app.style.display='block';
+    load();
+    setInterval(load,3000);
+    updateCountdown();
+  }else{
+    alert("密码不对哦～");
+  }
+}
+
+function updateCountdown(){
+  let d = Math.floor((new Date()-startDate)/(1000*60*60*24));
+  countdownText.innerHTML = `我们在一起第 ${d} 天｜下一个纪念日：2027-01-11`;
+}
+
+async function load(){
+  let r = await fetch(API+'/'+ROOM);
+  let data = await r.json();
+  show(data);
+}
+
+function add(){
+  let t = type.value, d=date.value, c=content.value, r=remark.value;
+  let f = photo.files[0];
+  if(!d||!c){alert("请填日期和内容～");return}
+  let reader = new FileReader();
+  reader.onload = async e=>{
+    let img = e.target.result||'';
+    await fetch(API+'/'+ROOM,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id:Date.now(),type:t,date:d,content:c,remark:r,photo:img})
+    });
+    content.value=remark.value=photo.value='';
+    load();
+  };
+  f ? reader.readAsDataURL(f) : reader.onload({target:{result:''}});
+}
+
+async function del(id){
+  if(!confirm("确定删除？")) return;
+  await fetch(API+'/'+ROOM+'/'+id,{method:'DELETE'});
+  load();
+}
+
+function show(data){
+  if(!data||data.length===0){
+    list.innerHTML='<div class="empty">快来写下第一条甜蜜回忆～</div>';
+    return;
+  }
+  list.innerHTML = data.map(i=>`
+    <div class="item">
+      <div class="del" onclick="del(${i.id})">删除</div>
+      <div class="tag">${i.type}</div>
+      <div class="date">${i.date}</div>
+      <div class="content">${i.content}</div>
+      <div class="remark">${i.remark||''}</div>
+      ${i.photo?'<img class="photo" src="'+i.photo+'">':''}
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>
